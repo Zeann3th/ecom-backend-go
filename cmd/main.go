@@ -5,7 +5,8 @@ import (
 	"log"
 
 	"github.com/labstack/echo/v4"
-	"github.com/zeann3th/ecom/internal/api/service/general"
+	"github.com/zeann3th/ecom/internal/api/middleware"
+	"github.com/zeann3th/ecom/internal/api/service/product"
 	"github.com/zeann3th/ecom/internal/api/service/user"
 	"github.com/zeann3th/ecom/internal/config"
 )
@@ -13,11 +14,19 @@ import (
 func main() {
 	e := echo.New()
 
-	e.GET("/api/v1", general.HelloHandler)
+	v1 := e.Group("/api/v1")
 
-	e.POST("/api/v1/register", user.UserRegisterHandler)
+	// User
 
-	e.POST("/api/v1/login", user.UserLoginHandler)
+	v1.POST("/register", user.UserRegisterHandler)
+
+	v1.POST("/login", user.UserLoginHandler)
+
+	// Product
+
+	v1.GET("/products", product.GetProductsHandler, middleware.JWTMiddleware)
+
+	// Order
 
 	log.Fatal(e.Start(fmt.Sprintf(":%v", config.Env["PORT"])))
 }

@@ -19,7 +19,7 @@ func ConnectStorage(driver string, conn string) (*sql.DB, error) {
 		log.Fatal(err)
 	}
 
-	log.Println(fmt.Sprintf("[%v:%v]: Successfully connected!!!", config.Env["DB_DRIVER"], config.Env["DB_NAME"]))
+	log.Println(fmt.Sprintf("[%v]: Successfully connected!!!", config.Env["DB_DRIVER"]))
 
 	return db, nil
 }

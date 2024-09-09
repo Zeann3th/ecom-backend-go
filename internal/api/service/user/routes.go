@@ -15,28 +15,38 @@ import (
 func UserRegisterHandler(c echo.Context) error {
 	req := new(models.RegisterUserPayload)
 	if err := c.Bind(req); err != nil {
-		return c.JSONBlob(http.StatusBadRequest, []byte(`{"error": "Invalid request payload"}`))
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"error": "Invalid request payload",
+		})
 	}
 
 	if req.FirstName == "" || req.LastName == "" || req.Email == "" || req.Password == "" {
-		return c.JSONBlob(http.StatusBadRequest, []byte(`{"error": "Missing required fields"}`))
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"error": "Missing required fields",
+		})
 	}
 	// DB instance
 	instdb, err := db.ConnectStorage(config.Env["DB_DRIVER"], config.Env["DB_CONN"])
 	if err != nil {
-		return c.JSONBlob(http.StatusInternalServerError, []byte(`{"error": "Internal server error"}`))
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": "Database connection failed",
+		})
 	}
 
 	// Check if database have user
 	_, err = GetUserByEmail(instdb, req.Email)
 	if err == nil {
-		return c.JSONBlob(http.StatusBadRequest, []byte(`{"error": "User already exists"}`))
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"error": "User already exists",
+		})
 	}
 
 	// Hash password
 	hashedPassword, err := auth.HashPassword(req.Password)
 	if err != nil {
-		return err
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": "Password hasing failed",
+		})
 	}
 
 	// Add new user to database
@@ -48,26 +58,31 @@ func UserRegisterHandler(c echo.Context) error {
 	}
 	err = CreateUser(instdb, user)
 
-	return c.JSONBlob(http.StatusOK, []byte(
-		fmt.Sprintf(`{
-      "email": %q,
-      "createdAt": %q
-    }`, req.Email, time.Now().Format(time.RFC3339))))
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"email":     req.Email,
+		"createdAt": time.Now().Format(time.RFC3339),
+	})
 }
 
 func UserLoginHandler(c echo.Context) error {
 	req := new(models.LoginUserPayload)
 	if err := c.Bind(req); err != nil {
-		return c.JSONBlob(http.StatusBadRequest, []byte(`{"error": "Invalid request payload"}`))
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"error": "Invalid request payload",
+		})
 	}
 
 	if req.Email == "" || req.Password == "" {
-		return c.JSONBlob(http.StatusBadRequest, []byte(`{"error": "Missing required fields"}`))
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"error": "Missing required fields",
+		})
 	}
 	// DB instance
 	instdb, err := db.ConnectStorage(config.Env["DB_DRIVER"], config.Env["DB_CONN"])
 	if err != nil {
-		return c.JSONBlob(http.StatusInternalServerError, []byte(`{"error": "Internal server error"}`))
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": "Database connection failed",
+		})
 	}
 
 	// Check if database have user
@@ -78,11 +93,21 @@ func UserLoginHandler(c echo.Context) error {
 
 	// Compare password
 	if !auth.ComparePassword(user.Password, req.Password) {
-		return c.JSONBlob(http.StatusBadRequest, []byte(`{"error": "Incorrect password"}`))
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"error": "Incorrect password",
+		})
 	}
 
 	secret := []byte(config.Env["JWTSecret"])
 	token, err := auth.CreateJWT(secret, user.Id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": "Must have been the wind...",
+		})
+	}
 
-	return c.JSONBlob(http.StatusOK, []byte(fmt.Sprintf(`{"msg": "Login successfully", "token": "%v"}`, token)))
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"msg":   "Login successfully",
+		"token": token,
+	})
 }
