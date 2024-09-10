@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
-	"github.com/zeann3th/ecom/internal/api/service/user"
+	"github.com/zeann3th/ecom/internal/api/services/user"
 	"github.com/zeann3th/ecom/internal/config"
 	"github.com/zeann3th/ecom/internal/db"
 )

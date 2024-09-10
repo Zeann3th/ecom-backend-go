@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS products;
+
+CREATE TABLE products(
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  image TEXT NOT NULL,
+  price FLOAT NOT NULL,
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
