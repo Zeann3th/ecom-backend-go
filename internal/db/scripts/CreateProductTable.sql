@@ -6,5 +6,6 @@ CREATE TABLE products(
   description TEXT,
   image TEXT NOT NULL,
   price FLOAT NOT NULL,
+  stock INT NOT NULL,
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )

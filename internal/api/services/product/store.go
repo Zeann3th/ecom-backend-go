@@ -16,7 +16,7 @@ func GetAllProducts(db *sql.DB) ([]models.Product, error) {
 
 	for rows.Next() {
 		p := &models.Product{}
-		err := rows.Scan(&p.Id, &p.Name, &p.Description, &p.Image, &p.Price, &p.CreatedAt)
+		err := rows.Scan(&p.Id, &p.Name, &p.Description, &p.Image, &p.Price, &p.Stock, &p.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -31,7 +31,7 @@ func GetProductById(db *sql.DB, id int) (*models.Product, error) {
 	p := &models.Product{}
 	rows := db.QueryRow("SELECT * FROM products WHERE id = $1", id)
 
-	err := rows.Scan(&p.Id, &p.Name, &p.Description, &p.Image, &p.Price, &p.CreatedAt)
+	err := rows.Scan(&p.Id, &p.Name, &p.Description, &p.Image, &p.Price, &p.Stock, &p.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -40,39 +40,17 @@ func GetProductById(db *sql.DB, id int) (*models.Product, error) {
 }
 
 func UpdateProduct(db *sql.DB, product *models.Product) error {
-	tx, err := db.Begin()
+	_, err := db.Exec("UPDATE products SET name = $1, description = $2, image = $3, price = $4, stock = $5, createdAt = $6 WHERE id = $7", product.Name, product.Description, product.Image, product.Price, product.Stock, time.Now(), product.Id)
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec("UPDATE products SET name = $1, description = $2, image = $3, price = $4, createdAt = $5 WHERE id = $6", product.Name, product.Description, product.Image, product.Price, time.Now(), product.Id)
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
 func CreateProduct(db *sql.DB, product *models.Product) error {
-	tx, err := db.Begin()
+	_, err := db.Exec("INSERT INTO products(name, description, image, price) VALUES ($1, $2, $3, $4, $5)", product.Name, product.Description, product.Image, product.Price, product.Stock)
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec("INSERT INTO products(name, description, image, price) VALUES ($1, $2, $3, $4)", product.Name, product.Description, product.Image, product.Price)
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return err
-	}
-
 	return nil
 }

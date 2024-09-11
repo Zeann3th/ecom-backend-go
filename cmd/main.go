@@ -5,7 +5,8 @@ import (
 	"log"
 
 	"github.com/labstack/echo/v4"
-	"github.com/zeann3th/ecom/internal/api/middleware"
+	"github.com/labstack/echo/v4/middleware"
+	m "github.com/zeann3th/ecom/internal/api/middleware"
 	"github.com/zeann3th/ecom/internal/api/services/order"
 	"github.com/zeann3th/ecom/internal/api/services/product"
 	"github.com/zeann3th/ecom/internal/api/services/user"
@@ -14,6 +15,11 @@ import (
 
 func main() {
 	e := echo.New()
+
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{echo.GET, echo.POST, echo.PUT, echo.DELETE},
+	}))
 
 	v1 := e.Group("/api/v1")
 
@@ -27,15 +33,15 @@ func main() {
 
 	v1.GET("/products", product.AllProductsAcquisitionHandler)
 
-	v1.POST("/products", product.ProductCreationHandler, middleware.JWTMiddleware)
+	v1.POST("/products", product.ProductCreationHandler, m.JWTMiddleware)
 
 	v1.GET("/products/:id", product.ProductAcquisitionHandler)
 
-	v1.PUT("/products/:id", product.ProductUpdateHandler, middleware.JWTMiddleware)
+	v1.PUT("/products/:id", product.ProductUpdateHandler, m.JWTMiddleware)
 
 	// Order
 
-	v1.POST("/cart", order.OrderHandler, middleware.JWTMiddleware)
+	v1.POST("/cart", order.OrderHandler, m.JWTMiddleware)
 
 	log.Fatal(e.Start(fmt.Sprintf(":%v", config.Env["PORT"])))
 }

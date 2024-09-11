@@ -98,6 +98,9 @@ func ProductUpdateHandler(c echo.Context) error {
 	if req.Price != 0 {
 		p.Price = req.Price
 	}
+	if req.Stock != 0 {
+		p.Stock = req.Stock
+	}
 	if req.Description != "" {
 		p.Description = req.Description
 	}
@@ -118,7 +121,7 @@ func ProductCreationHandler(c echo.Context) error {
 		})
 	}
 
-	if req.Name == "" || req.Image == "" || req.Price == 0 {
+	if req.Name == "" || req.Image == "" || req.Price == 0 || req.Stock == 0 {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"error": "Missing required fields",
 		})
@@ -136,6 +139,7 @@ func ProductCreationHandler(c echo.Context) error {
 		Description: req.Description,
 		Image:       req.Image,
 		Price:       req.Price,
+		Stock:       req.Stock,
 	}
 	err = CreateProduct(instdb, p)
 

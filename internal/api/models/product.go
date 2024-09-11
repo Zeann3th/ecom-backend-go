@@ -8,6 +8,7 @@ type Product struct {
 	Description string    `json:"description"`
 	Image       string    `json:"image"`
 	Price       float64   `json:"price"`
+	Stock       int       `json:"stock"`
 	CreatedAt   time.Time `json:"createdAt"`
 }
 
@@ -16,4 +17,5 @@ type ProductPayload struct {
 	Description string  `json:"description"`
 	Image       string  `json:"image"`
 	Price       float64 `json:"price"`
+	Stock       int     `json:"stock"`
 }
