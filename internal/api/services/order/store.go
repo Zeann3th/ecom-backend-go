@@ -28,26 +28,25 @@ func GetOrdersByUserId(db *sql.DB, userId int) ([]models.Order, float64, error) 
 	return orders, total, nil
 }
 
-func GetOrdersByProductId(db *sql.DB, productId int) ([]models.Order, float64, error) {
+func GetOrdersByProductId(db *sql.DB, productId int) ([]models.Order, error) {
 	var orders []models.Order
-	var total float64
 
 	rows, err := db.Query("SELECT * FROM orders WHERE product_id = $1", productId)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	for rows.Next() {
 		o := &models.Order{}
 		err := rows.Scan(&o.UserId, &o.ProductId, o.Quantity, o.CreatedAt)
 		if err != nil {
-			return nil, 0, err
+			return nil, err
 		}
 
 		orders = append(orders, *o)
 	}
 
-	return orders, total, nil
+	return orders, nil
 }
 
 func CreateOrder(db *sql.DB, order *models.Order) error {
