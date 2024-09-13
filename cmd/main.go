@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -41,7 +42,8 @@ func main() {
 	v1.POST("/cart", order.OrderHandler, m.JWTMiddleware)
 
 	// Render port
-	port := config.Env["PORT"]
+	os.Setenv("PORT", config.Env["PORT"]) // Don't ask me why, Render just does not explain...
+	port := os.Getenv("PORT")
 	if port == "" {
 		port = "6969"
 	}
