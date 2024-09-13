@@ -24,13 +24,11 @@ func main() {
 	v1 := e.Group("/api/v1")
 
 	// User
-
 	v1.POST("/register", user.UserRegisterHandler)
 
 	v1.POST("/login", user.UserLoginHandler)
 
 	// Product
-
 	v1.GET("/products", product.AllProductsAcquisitionHandler)
 
 	v1.POST("/products", product.ProductCreationHandler, m.JWTMiddleware)
@@ -40,8 +38,13 @@ func main() {
 	v1.PUT("/products/:id", product.ProductUpdateHandler, m.JWTMiddleware)
 
 	// Order
-
 	v1.POST("/cart", order.OrderHandler, m.JWTMiddleware)
 
-	log.Fatal(e.Start(fmt.Sprintf(":%v", config.Env["PORT"])))
+	// Render port
+	port := config.Env["PORT"]
+	if port == "" {
+		port = "6969"
+	}
+
+	log.Fatal(e.Start(fmt.Sprintf(":%v", port)))
 }
