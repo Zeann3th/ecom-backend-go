@@ -42,8 +42,7 @@ func main() {
 	v1.POST("/cart", order.OrderHandler, m.JWTMiddleware)
 
 	// Render port
-	os.Setenv("PORT", config.Env["PORT"]) // Don't ask me why, Render just does not explain...
-	port := os.Getenv("PORT")
+	port := config.Env["PORT"]
 	if port == "" {
 		port = "6969"
 	}
