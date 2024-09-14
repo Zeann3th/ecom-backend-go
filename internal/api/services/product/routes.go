@@ -124,3 +124,29 @@ func (p *ProductHandler) HandleProductCreation(c echo.Context) error {
 		"msg": "Product created",
 	})
 }
+
+func (p *ProductHandler) HandleProductDeletion(c echo.Context) error {
+	idStr := c.Param("id")
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": err,
+		})
+	}
+	_, err = GetProductById(p.DB, id)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]interface{}{
+			"error": err,
+		})
+	}
+	err = DeleteProduct(p.DB, id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": err,
+		})
+	}
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"msg": "Product deleted successfully",
+	})
+}

@@ -40,13 +40,15 @@ func main() {
 	// Product
 	p := &product.ProductHandler{DB: instdb}
 
-	v1.GET("/products", p.HandleAllProductsAcquisition)
+	v1.GET("/products", p.HandleAllProducts)
 
 	v1.POST("/products", p.HandleProductCreation, m.JWTMiddleware)
 
-	v1.GET("/products/:id", p.HandleProductAcquisitionById)
+	v1.GET("/products/:id", p.HandleProductById)
 
 	v1.PUT("/products/:id", p.HandleProductUpdate, m.JWTMiddleware, m.IsSeller)
+
+	v1.DELETE("/products/:id", p.HandleProductDeletion, m.JWTMiddleware, m.IsSeller)
 
 	// Order
 	o := &order.OrderHandler{DB: instdb}

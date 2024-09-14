@@ -84,3 +84,11 @@ func CreateProduct(db *sql.DB, product *models.Product) error {
 	}
 	return nil
 }
+
+func DeleteProduct(db *sql.DB, id int) error {
+	_, err := db.Exec("DELETE FROM products WHERE id = $1", id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
