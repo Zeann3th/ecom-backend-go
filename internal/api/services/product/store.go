@@ -78,7 +78,7 @@ func UpdateProduct(db *sql.DB, product *models.Product) error {
 }
 
 func CreateProduct(db *sql.DB, product *models.Product) error {
-	_, err := db.Exec("INSERT INTO products(name, description, image, price, sellerId) VALUES ($1, $2, $3, $4, $5, $6)", product.Name, product.Description, product.Image, product.Price, product.Stock, product.SellerId)
+	_, err := db.Exec("INSERT INTO products(name, description, image, price, stock, sellerId) VALUES ($1, $2, $3, $4, $5, $6)", product.Name, product.Description, product.Image, product.Price, product.Stock, product.SellerId)
 	if err != nil {
 		return err
 	}

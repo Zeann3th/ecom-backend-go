@@ -13,7 +13,7 @@ import (
 
 func IsSeller(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		sellerId := c.Get("user").(models.User).Id
+		sellerId := c.Get("user").(*models.User).Id
 		productIdStr := c.Param("id")
 
 		productId, err := strconv.Atoi(productIdStr)

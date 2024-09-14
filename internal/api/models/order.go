@@ -9,7 +9,11 @@ type Order struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
-type OrderPayload struct {
+type OrderCreationPayload struct {
 	ProductId int `json:"productId"`
 	Quantity  int `json:"quantity"`
+}
+
+type OrderUpdatePayload struct {
+	Quantity int `json:"quantity"`
 }

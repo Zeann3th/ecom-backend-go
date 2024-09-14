@@ -2,7 +2,6 @@ package user
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -36,7 +35,6 @@ func (u *UserHandler) HandleUserRegister(c echo.Context) error {
 			"error": "User already exists",
 		})
 	}
-
 	// Hash password
 	hashedPassword, err := auth.HashPassword(req.Password)
 	if err != nil {
@@ -44,7 +42,6 @@ func (u *UserHandler) HandleUserRegister(c echo.Context) error {
 			"error": "Password hasing failed",
 		})
 	}
-
 	// Add new user to database
 	user := &models.User{
 		FirstName: req.FirstName,
@@ -52,7 +49,13 @@ func (u *UserHandler) HandleUserRegister(c echo.Context) error {
 		Email:     req.Email,
 		Password:  hashedPassword,
 	}
+
 	err = CreateUser(u.DB, user)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": err,
+		})
+	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"email":     req.Email,
@@ -76,9 +79,10 @@ func (u *UserHandler) HandleUserLogin(c echo.Context) error {
 	// Check if database have user
 	user, err := GetUserByEmail(u.DB, req.Email)
 	if err != nil {
-		return c.JSONBlob(http.StatusBadRequest, []byte(fmt.Sprintf(`{"error": "%v"}`, err)))
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"error": err,
+		})
 	}
-
 	// Compare password
 	if !auth.ComparePassword(user.Password, req.Password) {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
@@ -87,10 +91,11 @@ func (u *UserHandler) HandleUserLogin(c echo.Context) error {
 	}
 
 	secret := []byte(config.Env["JWTSecret"])
+
 	token, err := auth.CreateJWT(secret, user.Id)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": "Must have been the wind...",
+			"error": err,
 		})
 	}
 

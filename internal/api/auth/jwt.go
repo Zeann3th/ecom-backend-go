@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 func CreateJWT(secret []byte, userId int) (string, error) {
 	jwtExpirationInSeconds, err := strconv.Atoi(config.Env["JWTExpirationInSeconds"])
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Invalid time period, failed to parse into int")
 	}
 
 	expiration := time.Second * time.Duration(jwtExpirationInSeconds)
@@ -22,7 +23,7 @@ func CreateJWT(secret []byte, userId int) (string, error) {
 
 	tokenString, err := token.SignedString(secret)
 	if err != nil {
-		return "", nil
+		return "", fmt.Errorf("Failed to sign JWT token")
 	}
 	return tokenString, nil
 }

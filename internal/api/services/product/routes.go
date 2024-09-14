@@ -20,6 +20,7 @@ func (p *ProductHandler) HandleAllProducts(c echo.Context) error {
 			"error": "Product does not exist",
 		})
 	}
+
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"products": products,
 	})
@@ -34,10 +35,11 @@ func (p *ProductHandler) HandleProductById(c echo.Context) error {
 			"error": "Invalid Id",
 		})
 	}
+
 	product, err := GetProductById(p.DB, id)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]interface{}{
-			"error": "Product does not exist",
+			"error": err,
 		})
 	}
 
@@ -62,10 +64,11 @@ func (p *ProductHandler) HandleProductUpdate(c echo.Context) error {
 			"error": "Invalid request payload",
 		})
 	}
+
 	product, err := GetProductById(p.DB, id)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]interface{}{
-			"error": "Product does not exist",
+			"error": err,
 		})
 	}
 
@@ -93,6 +96,7 @@ func (p *ProductHandler) HandleProductUpdate(c echo.Context) error {
 }
 
 func (p *ProductHandler) HandleProductCreation(c echo.Context) error {
+	sellerId := c.Get("user").(*models.User).Id
 	req := new(models.ProductPayload)
 
 	if err := c.Bind(req); err != nil {
@@ -106,12 +110,14 @@ func (p *ProductHandler) HandleProductCreation(c echo.Context) error {
 			"error": "Missing required fields",
 		})
 	}
+
 	product := &models.Product{
 		Name:        req.Name,
 		Description: req.Description,
 		Image:       req.Image,
 		Price:       req.Price,
 		Stock:       req.Stock,
+		SellerId:    sellerId,
 	}
 	err := CreateProduct(p.DB, product)
 	if err != nil {
@@ -131,21 +137,24 @@ func (p *ProductHandler) HandleProductDeletion(c echo.Context) error {
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": err,
+			"error": "Invalid Id",
 		})
 	}
+
 	_, err = GetProductById(p.DB, id)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]interface{}{
 			"error": err,
 		})
 	}
+
 	err = DeleteProduct(p.DB, id)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"error": err,
 		})
 	}
+
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"msg": "Product deleted successfully",
 	})

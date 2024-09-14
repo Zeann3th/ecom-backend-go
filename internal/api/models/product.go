@@ -19,5 +19,4 @@ type ProductPayload struct {
 	Image       string  `json:"image"`
 	Price       float64 `json:"price"`
 	Stock       int     `json:"stock"`
-	SellerId    int     `json:"sellerId"`
 }
