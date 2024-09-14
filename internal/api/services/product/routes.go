@@ -1,24 +1,20 @@
 package product
 
 import (
+	"database/sql"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/zeann3th/ecom/internal/api/models"
-	"github.com/zeann3th/ecom/internal/config"
-	"github.com/zeann3th/ecom/internal/db"
 )
 
-func AllProductsAcquisitionHandler(c echo.Context) error {
-	instdb, err := db.ConnectStorage(config.Env["DB_DRIVER"], config.Env["DB_CONN"])
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": "Database connection failed",
-		})
-	}
+type ProductHandler struct {
+	DB *sql.DB
+}
 
-	products, err := GetAllProducts(instdb)
+func (p *ProductHandler) HandleAllProducts(c echo.Context) error {
+	products, err := GetAllProducts(p.DB)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]interface{}{
 			"error": "Product does not exist",
@@ -29,7 +25,7 @@ func AllProductsAcquisitionHandler(c echo.Context) error {
 	})
 }
 
-func ProductAcquisitionHandler(c echo.Context) error {
+func (p *ProductHandler) HandleProductById(c echo.Context) error {
 	idStr := c.Param("id")
 
 	id, err := strconv.Atoi(idStr)
@@ -38,15 +34,7 @@ func ProductAcquisitionHandler(c echo.Context) error {
 			"error": "Invalid Id",
 		})
 	}
-
-	instdb, err := db.ConnectStorage(config.Env["DB_DRIVER"], config.Env["DB_CONN"])
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": "Database connection failed",
-		})
-	}
-
-	product, err := GetProductById(instdb, id)
+	product, err := GetProductById(p.DB, id)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]interface{}{
 			"error": "Product does not exist",
@@ -58,7 +46,7 @@ func ProductAcquisitionHandler(c echo.Context) error {
 	})
 }
 
-func ProductUpdateHandler(c echo.Context) error {
+func (p *ProductHandler) HandleProductUpdate(c echo.Context) error {
 	idStr := c.Param("id")
 
 	id, err := strconv.Atoi(idStr)
@@ -74,15 +62,7 @@ func ProductUpdateHandler(c echo.Context) error {
 			"error": "Invalid request payload",
 		})
 	}
-
-	instdb, err := db.ConnectStorage(config.Env["DB_DRIVER"], config.Env["DB_CONN"])
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": "Database connection failed",
-		})
-	}
-
-	p, err := GetProductById(instdb, id)
+	product, err := GetProductById(p.DB, id)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]interface{}{
 			"error": "Product does not exist",
@@ -90,29 +70,29 @@ func ProductUpdateHandler(c echo.Context) error {
 	}
 
 	if req.Name != "" {
-		p.Name = req.Name
+		product.Name = req.Name
 	}
 	if req.Image != "" {
-		p.Image = req.Name
+		product.Image = req.Name
 	}
 	if req.Price != 0 {
-		p.Price = req.Price
+		product.Price = req.Price
 	}
 	if req.Stock != 0 {
-		p.Stock = req.Stock
+		product.Stock = req.Stock
 	}
 	if req.Description != "" {
-		p.Description = req.Description
+		product.Description = req.Description
 	}
 
-	err = UpdateProduct(instdb, p)
+	err = UpdateProduct(p.DB, product)
 
 	return c.JSON(http.StatusAccepted, map[string]interface{}{
 		"msg": "Product updated",
 	})
 }
 
-func ProductCreationHandler(c echo.Context) error {
+func (p *ProductHandler) HandleProductCreation(c echo.Context) error {
 	req := new(models.ProductPayload)
 
 	if err := c.Bind(req); err != nil {
@@ -126,22 +106,19 @@ func ProductCreationHandler(c echo.Context) error {
 			"error": "Missing required fields",
 		})
 	}
-	// DB instance
-	instdb, err := db.ConnectStorage(config.Env["DB_DRIVER"], config.Env["DB_CONN"])
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": "Database connection failed",
-		})
-	}
-
-	p := &models.Product{
+	product := &models.Product{
 		Name:        req.Name,
 		Description: req.Description,
 		Image:       req.Image,
 		Price:       req.Price,
 		Stock:       req.Stock,
 	}
-	err = CreateProduct(instdb, p)
+	err := CreateProduct(p.DB, product)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": err,
+		})
+	}
 
 	return c.JSON(http.StatusAccepted, map[string]interface{}{
 		"msg": "Product created",

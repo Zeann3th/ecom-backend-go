@@ -1,6 +1,7 @@
 package user
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"time"
@@ -9,10 +10,13 @@ import (
 	"github.com/zeann3th/ecom/internal/api/auth"
 	"github.com/zeann3th/ecom/internal/api/models"
 	"github.com/zeann3th/ecom/internal/config"
-	"github.com/zeann3th/ecom/internal/db"
 )
 
-func UserRegisterHandler(c echo.Context) error {
+type UserHandler struct {
+	DB *sql.DB
+}
+
+func (u *UserHandler) HandleUserRegister(c echo.Context) error {
 	req := new(models.RegisterUserPayload)
 	if err := c.Bind(req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
@@ -25,16 +29,8 @@ func UserRegisterHandler(c echo.Context) error {
 			"error": "Missing required fields",
 		})
 	}
-	// DB instance
-	instdb, err := db.ConnectStorage(config.Env["DB_DRIVER"], config.Env["DB_CONN"])
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": "Database connection failed",
-		})
-	}
-
 	// Check if database have user
-	_, err = GetUserByEmail(instdb, req.Email)
+	_, err := GetUserByEmail(u.DB, req.Email)
 	if err == nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"error": "User already exists",
@@ -56,7 +52,7 @@ func UserRegisterHandler(c echo.Context) error {
 		Email:     req.Email,
 		Password:  hashedPassword,
 	}
-	err = CreateUser(instdb, user)
+	err = CreateUser(u.DB, user)
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"email":     req.Email,
@@ -64,7 +60,7 @@ func UserRegisterHandler(c echo.Context) error {
 	})
 }
 
-func UserLoginHandler(c echo.Context) error {
+func (u *UserHandler) HandleUserLogin(c echo.Context) error {
 	req := new(models.LoginUserPayload)
 	if err := c.Bind(req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{
@@ -77,16 +73,8 @@ func UserLoginHandler(c echo.Context) error {
 			"error": "Missing required fields",
 		})
 	}
-	// DB instance
-	instdb, err := db.ConnectStorage(config.Env["DB_DRIVER"], config.Env["DB_CONN"])
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": "Database connection failed",
-		})
-	}
-
 	// Check if database have user
-	user, err := GetUserByEmail(instdb, req.Email)
+	user, err := GetUserByEmail(u.DB, req.Email)
 	if err != nil {
 		return c.JSONBlob(http.StatusBadRequest, []byte(fmt.Sprintf(`{"error": "%v"}`, err)))
 	}

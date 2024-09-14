@@ -10,7 +10,6 @@ type Order struct {
 }
 
 type OrderPayload struct {
-	UserId    int `json:"userId"`
 	ProductId int `json:"productId"`
 	Quantity  int `json:"quantity"`
 }

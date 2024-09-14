@@ -2,6 +2,7 @@ package product
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/zeann3th/ecom/internal/api/models"
@@ -16,7 +17,7 @@ func GetAllProducts(db *sql.DB) ([]models.Product, error) {
 
 	for rows.Next() {
 		p := &models.Product{}
-		err := rows.Scan(&p.Id, &p.Name, &p.Description, &p.Image, &p.Price, &p.Stock, &p.CreatedAt)
+		err := rows.Scan(&p.Id, &p.Name, &p.Description, &p.Image, &p.Price, &p.Stock, &p.SellerId, &p.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -31,12 +32,41 @@ func GetProductById(db *sql.DB, id int) (*models.Product, error) {
 	p := &models.Product{}
 	rows := db.QueryRow("SELECT * FROM products WHERE id = $1", id)
 
-	err := rows.Scan(&p.Id, &p.Name, &p.Description, &p.Image, &p.Price, &p.Stock, &p.CreatedAt)
+	err := rows.Scan(&p.Id, &p.Name, &p.Description, &p.Image, &p.Price, &p.Stock, &p.SellerId, &p.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
 
 	return p, nil
+}
+
+func GetProductBySellerId(db *sql.DB, sellerId int) ([]models.Product, error) {
+	var products []models.Product
+	rows, err := db.Query("SELECT * FROM products WHERE sellerId = $1", sellerId)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		p := &models.Product{}
+		err := rows.Scan(&p.Id, &p.Name, &p.Description, &p.Image, &p.Price, &p.Stock, &p.SellerId, &p.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return products, nil
+}
+
+func CheckSellerPrivilege(db *sql.DB, sellerId, productId int) (bool, error) {
+	p := &models.Product{}
+	rows := db.QueryRow("SELECT id FROM products WHERE sellerId = $1 AND id = $2", sellerId, productId)
+	err := rows.Scan(&p.Id)
+	if err != nil {
+		return false, err
+	}
+	if p.Id == 0 {
+		return false, fmt.Errorf("Unauthorized product or product does not exist")
+	}
+	return true, nil
 }
 
 func UpdateProduct(db *sql.DB, product *models.Product) error {
@@ -48,7 +78,7 @@ func UpdateProduct(db *sql.DB, product *models.Product) error {
 }
 
 func CreateProduct(db *sql.DB, product *models.Product) error {
-	_, err := db.Exec("INSERT INTO products(name, description, image, price) VALUES ($1, $2, $3, $4, $5)", product.Name, product.Description, product.Image, product.Price, product.Stock)
+	_, err := db.Exec("INSERT INTO products(name, description, image, price, sellerId) VALUES ($1, $2, $3, $4, $5, $6)", product.Name, product.Description, product.Image, product.Price, product.Stock, product.SellerId)
 	if err != nil {
 		return err
 	}

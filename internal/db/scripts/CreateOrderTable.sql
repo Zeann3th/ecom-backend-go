@@ -1,8 +1,8 @@
 DROP TABLE IF EXISTS orders;
 
 CREATE TABLE orders(
-  user_id INT NOT NULL,
-  product_id INT NOT NULL,
+  userId INT NOT NULL,
+  productId INT NOT NULL,
   quantity INT NOT NULL,
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
