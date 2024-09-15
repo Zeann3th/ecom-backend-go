@@ -1,3 +1,4 @@
+-- Dummy data for user, DO NOT EXECUTE THIS, only refer it to login (because the password must be encrypted)
 INSERT INTO users (firstName, lastName, email, password) 
 VALUES
 ('John', 'Doe', 'john.doe@example.com', '4bG9!z@#dFwP'),

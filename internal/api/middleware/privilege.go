@@ -2,12 +2,12 @@ package middleware
 
 import (
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/zeann3th/ecom/internal/api/models"
 	"github.com/zeann3th/ecom/internal/api/services/product"
-	"github.com/zeann3th/ecom/internal/config"
 	"github.com/zeann3th/ecom/internal/db"
 )
 
@@ -23,7 +23,7 @@ func IsSeller(next echo.HandlerFunc) echo.HandlerFunc {
 			})
 		}
 
-		instdb, err := db.ConnectStorage(config.Env["DB_DRIVER"], config.Env["DB_CONN"])
+		instdb, err := db.ConnectStorage(os.Getenv("DB_DRIVER"), os.Getenv("DB_CONN"))
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 				"error": "Database connection failed",

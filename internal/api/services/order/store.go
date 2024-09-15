@@ -18,7 +18,7 @@ func GetOrdersByUserId(db *sql.DB, userId int) ([]models.Order, float64, error) 
 
 	for rows.Next() {
 		o := &models.Order{}
-		err := rows.Scan(&o.UserId, &o.ProductId, o.Quantity, o.CreatedAt)
+		err := rows.Scan(&o.UserId, &o.ProductId, &o.Quantity, &o.CreatedAt)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -53,7 +53,7 @@ func GetOrdersByProductId(db *sql.DB, productId int) ([]models.Order, error) {
 func CheckOrderExist(db *sql.DB, userId, productId int) (bool, error) {
 	rows := db.QueryRow("SELECT * FROM orders WHERE productId = $1 AND userId = $2", productId, userId)
 	o := &models.Order{}
-	err := rows.Scan(&o.UserId, &o.ProductId, o.Quantity, o.CreatedAt)
+	err := rows.Scan(&o.UserId, &o.ProductId, &o.Quantity, &o.CreatedAt)
 	if err != nil {
 		return false, err
 	}

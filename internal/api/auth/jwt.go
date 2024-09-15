@@ -2,15 +2,15 @@ package auth
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/zeann3th/ecom/internal/config"
 )
 
 func CreateJWT(secret []byte, userId int) (string, error) {
-	jwtExpirationInSeconds, err := strconv.Atoi(config.Env["JWTExpirationInSeconds"])
+	jwtExpirationInSeconds, err := strconv.Atoi(os.Getenv("JWTExpirationInSeconds"))
 	if err != nil {
 		return "", fmt.Errorf("Invalid time period, failed to parse into int")
 	}

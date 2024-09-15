@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -15,6 +16,11 @@ import (
 )
 
 func main() {
+	err := config.LoadEnv()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	e := echo.New()
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -25,7 +31,7 @@ func main() {
 	v1 := e.Group("/api/v1")
 
 	// Database
-	instdb, err := db.ConnectStorage(config.Env["DB_DRIVER"], config.Env["DB_CONN"])
+	instdb, err := db.ConnectStorage(os.Getenv("DB_DRIVER"), os.Getenv("DB_CONN"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -62,10 +68,10 @@ func main() {
 	v1.DELETE("/cart/:id", o.HandleOrderDeletion, m.JWTMiddleware)
 
 	// Render port
-	port := config.Env["PORT"]
+	port := os.Getenv("PORT")
 	if port == "" {
 		port = "6969"
 	}
 
-	log.Fatal(e.Start(fmt.Sprintf(":%v", port)))
+	log.Fatal(e.Start(fmt.Sprintf("0.0.0.0:%v", port)))
 }

@@ -3,12 +3,12 @@ package user
 import (
 	"database/sql"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/zeann3th/ecom/internal/api/auth"
 	"github.com/zeann3th/ecom/internal/api/models"
-	"github.com/zeann3th/ecom/internal/config"
 )
 
 type UserHandler struct {
@@ -90,7 +90,7 @@ func (u *UserHandler) HandleUserLogin(c echo.Context) error {
 		})
 	}
 
-	secret := []byte(config.Env["JWTSecret"])
+	secret := []byte(os.Getenv("JWTSecret"))
 
 	token, err := auth.CreateJWT(secret, user.Id)
 	if err != nil {

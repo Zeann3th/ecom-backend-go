@@ -15,3 +15,8 @@ func initEnv() map[string]string {
 	}
 	return env
 }
+
+func LoadEnv() error {
+	err := godotenv.Load()
+	return err
+}

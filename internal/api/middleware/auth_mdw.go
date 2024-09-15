@@ -3,12 +3,12 @@ package middleware
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"github.com/zeann3th/ecom/internal/api/services/user"
-	"github.com/zeann3th/ecom/internal/config"
 	"github.com/zeann3th/ecom/internal/db"
 )
 
@@ -33,7 +33,7 @@ func JWTMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 		id, _ := strconv.Atoi(str)
 
-		instdb, err := db.ConnectStorage(config.Env["DB_DRIVER"], config.Env["DB_CONN"])
+		instdb, err := db.ConnectStorage(os.Getenv("DB_DRIVER"), os.Getenv("DB_CONN"))
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 				"error": "Database connection failed",
@@ -68,6 +68,6 @@ func validateToken(token string) (*jwt.Token, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", t.Header["alg"])
 		}
-		return []byte(config.Env["JWTSecret"]), nil
+		return []byte(os.Getenv("JWTSecret")), nil
 	})
 }

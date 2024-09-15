@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 
 	_ "github.com/lib/pq"
-	"github.com/zeann3th/ecom/internal/config"
 )
 
 func ConnectStorage(driver string, conn string) (*sql.DB, error) {
@@ -19,7 +19,7 @@ func ConnectStorage(driver string, conn string) (*sql.DB, error) {
 		log.Fatal(err)
 	}
 
-	log.Println(fmt.Sprintf("[%v]: Successfully connected!!!", config.Env["DB_DRIVER"]))
+	log.Println(fmt.Sprintf("[%v]: Successfully connected!!!", os.Getenv("DB_DRIVER")))
 
 	return db, nil
 }
