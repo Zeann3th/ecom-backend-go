@@ -100,10 +100,10 @@ func SearchProducts(db *sql.DB, searchTerm string) ([]models.Product, error) {
 	var products []models.Product
 
 	rows, err := db.Query(
-		`SELECT id, name, description, image, price, stock, sellerId, ts_rank(search_vector, to_tsquery('english', $1)) as rank
+		`SELECT id, name, description, image, price, stock, sellerId
     FROM products
     WHERE search_vector @@ to_tsquery('english', $1)
-    ORDER BY rank DESC`, searchTerm)
+    ORDER BY ts_rank(search_vector, to_tsquery('english', $1)) DESC`, searchTerm)
 	if err != nil {
 		return nil, err
 	}
