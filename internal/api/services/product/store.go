@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	_ "github.com/lib/pq"
 	"github.com/zeann3th/ecom/internal/api/models"
 )
 
@@ -40,7 +41,7 @@ func GetProductById(db *sql.DB, id int) (*models.Product, error) {
 	return p, nil
 }
 
-func GetProductBySellerId(db *sql.DB, sellerId int) ([]models.Product, error) {
+func GetProductsBySellerId(db *sql.DB, sellerId int) ([]models.Product, error) {
 	var products []models.Product
 	rows, err := db.Query("SELECT * FROM products WHERE sellerId = $1", sellerId)
 	if err != nil {
@@ -52,6 +53,8 @@ func GetProductBySellerId(db *sql.DB, sellerId int) ([]models.Product, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		products = append(products, *p)
 	}
 	return products, nil
 }
@@ -91,4 +94,26 @@ func DeleteProduct(db *sql.DB, id int) error {
 		return err
 	}
 	return nil
+}
+
+func SearchProducts(db *sql.DB, searchTerm string) ([]models.Product, error) {
+	var products []models.Product
+
+	rows, err := db.Query(
+		`SELECT id, name, description, image, price, stock, sellerId, ts_rank(search_vector, to_tsquery('english', $1)) as rank
+    FROM products
+    WHERE search_vector @@ to_tsquery('english', $1)
+    ORDER BY rank DESC`, searchTerm)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		p := &models.Product{}
+		err := rows.Scan(&p.Id, &p.Name, &p.Description, &p.Image, &p.Price, &p.Stock, &p.SellerId)
+		if err != nil {
+			return nil, err
+		}
+		products = append(products, *p)
+	}
+	return products, nil
 }
