@@ -159,3 +159,17 @@ func (p *ProductHandler) HandleProductDeletion(c echo.Context) error {
 		"msg": "Product deleted successfully",
 	})
 }
+
+func (p *ProductHandler) HandleProductsSearch(c echo.Context) error {
+	searchTerm := c.QueryParam("term")
+
+	products, err := SearchProducts(p.DB, searchTerm)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": err,
+		})
+	}
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"results": products,
+	})
+}

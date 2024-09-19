@@ -42,6 +42,8 @@ func main() {
 
 	v1.GET("/products", p.HandleAllProducts)
 
+	v1.GET("/products/search", p.HandleProductsSearch)
+
 	v1.POST("/products", p.HandleProductCreation, m.JWTMiddleware)
 
 	v1.GET("/products/:id", p.HandleProductById)

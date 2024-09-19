@@ -92,3 +92,25 @@ func DeleteProduct(db *sql.DB, id int) error {
 	}
 	return nil
 }
+
+func SearchProducts(db *sql.DB, searchTerm string) ([]models.Product, error) {
+	var products []models.Product
+
+	rows, err := db.Query(
+		`SELECT id, name, description, image, price, stock, sellerId
+    FROM products
+    WHERE search_vector @@ to_tsquery('english', $1)
+    ORDER BY ts_rank(search_vector, to_tsquery('english', $1)) DESC`, searchTerm)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		p := &models.Product{}
+		err := rows.Scan(&p.Id, &p.Name, &p.Description, &p.Image, &p.Price, &p.Stock, &p.SellerId)
+		if err != nil {
+			return nil, err
+		}
+		products = append(products, *p)
+	}
+	return products, nil
+}
