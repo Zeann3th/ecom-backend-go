@@ -97,7 +97,7 @@ func SearchProducts(db *sql.DB, searchTerm string) ([]models.Product, error) {
 	var products []models.Product
 
 	rows, err := db.Query(
-		`SELECT id, name, description, image, price, stock, sellerId
+		`SELECT id, name, description, image, price, stock, sellerId, createdAt
     FROM products
     WHERE search_vector @@ to_tsquery('english', $1)
     ORDER BY ts_rank(search_vector, to_tsquery('english', $1)) DESC`, searchTerm)
@@ -106,7 +106,7 @@ func SearchProducts(db *sql.DB, searchTerm string) ([]models.Product, error) {
 	}
 	for rows.Next() {
 		p := &models.Product{}
-		err := rows.Scan(&p.Id, &p.Name, &p.Description, &p.Image, &p.Price, &p.Stock, &p.SellerId)
+		err := rows.Scan(&p.Id, &p.Name, &p.Description, &p.Image, &p.Price, &p.Stock, &p.SellerId, &p.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
