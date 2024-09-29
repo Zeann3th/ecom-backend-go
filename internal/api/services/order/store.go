@@ -8,26 +8,25 @@ import (
 	"github.com/zeann3th/ecom/internal/api/models"
 )
 
-func GetOrdersByUserId(db *sql.DB, userId int) ([]models.Order, float64, error) {
+func GetOrdersByUserId(db *sql.DB, userId int) ([]models.Order, error) {
 	var orders []models.Order
-	var total float64
 
 	rows, err := db.Query("SELECT * FROM orders WHERE userId = $1", userId)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	for rows.Next() {
 		o := &models.Order{}
 		err := rows.Scan(&o.UserId, &o.ProductId, &o.Quantity, &o.CreatedAt)
 		if err != nil {
-			return nil, 0, err
+			return nil, err
 		}
 
 		orders = append(orders, *o)
 	}
 
-	return orders, total, nil
+	return orders, nil
 }
 
 func GetOrdersByProductId(db *sql.DB, productId int) ([]models.Order, error) {

@@ -18,7 +18,7 @@ type OrderHandler struct {
 func (o *OrderHandler) HandleOrdersAcquisition(c echo.Context) error {
 	userId := c.Get("user").(*models.User).Id
 
-	orders, total, err := GetOrdersByUserId(o.DB, userId)
+	orders, err := GetOrdersByUserId(o.DB, userId)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]interface{}{
 			"error": err,
@@ -27,7 +27,6 @@ func (o *OrderHandler) HandleOrdersAcquisition(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"orders": orders,
-		"total":  total,
 	})
 }
 
@@ -139,8 +138,9 @@ func (o *OrderHandler) HandleOrderDeletion(c echo.Context) error {
 
 func (o *OrderHandler) HandleCheckout(c echo.Context) error {
 	userId := c.Get("user").(*models.User).Id
+	sum := 0.0
 
-	orders, _, err := GetOrdersByUserId(o.DB, userId)
+	orders, err := GetOrdersByUserId(o.DB, userId)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]interface{}{
 			"error": err,
@@ -155,14 +155,17 @@ func (o *OrderHandler) HandleCheckout(c echo.Context) error {
 	}
 	for _, order := range orders {
 		product, err := product.GetProductById(o.DB, order.ProductId)
+		sum += product.Price
 		if err != nil {
 			tx.Rollback()
+			sum = 0
 			return c.JSON(http.StatusNotFound, map[string]interface{}{
 				"error": err,
 			})
 		}
 		if order.Quantity > product.Stock {
 			tx.Rollback()
+			sum = 0
 			return c.JSON(http.StatusBadRequest, map[string]interface{}{
 				"error": fmt.Errorf("Product %v having only %v in stock, can't fullfil the request of %v", product.Name, product.Stock, order.Quantity),
 			})
@@ -170,6 +173,7 @@ func (o *OrderHandler) HandleCheckout(c echo.Context) error {
 			res, err := tx.Exec("UPDATE products SET stock = $1 WHERE id = $2", product.Stock-order.Quantity, product.Id)
 			if err != nil {
 				tx.Rollback()
+				sum = 0
 				return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 					"error": fmt.Errorf("Transaction failed, reverting back to previous state..."),
 				})
@@ -178,6 +182,7 @@ func (o *OrderHandler) HandleCheckout(c echo.Context) error {
 			res, err = tx.Exec("DELETE FROM orders WHERE userId = $1 AND productId = $2", userId, product.Id)
 			if err != nil {
 				tx.Rollback()
+				sum = 0
 				return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 					"error": fmt.Errorf("Transaction failed, reverting back to previous state..."),
 				})
@@ -190,6 +195,7 @@ func (o *OrderHandler) HandleCheckout(c echo.Context) error {
 	err = tx.Commit()
 	if err != nil {
 		tx.Rollback()
+		sum = 0
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"error": fmt.Errorf("Transaction failed, reverting back to previous state..."),
 		})
