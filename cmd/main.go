@@ -19,7 +19,7 @@ import (
 func main() {
 	err := config.LoadEnv()
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Cannot detect .env file, switching to os env variables")
 	}
 
 	e := echo.New()
