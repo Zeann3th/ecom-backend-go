@@ -12,10 +12,13 @@ import (
 	"github.com/zeann3th/ecom/internal/api/services/product"
 	"github.com/zeann3th/ecom/internal/api/services/user"
 	"github.com/zeann3th/ecom/internal/api/upload"
+	// "github.com/zeann3th/ecom/internal/config"
 	"github.com/zeann3th/ecom/internal/db"
 )
 
 func main() {
+	// config.LoadEnv()
+
 	e := echo.New()
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
