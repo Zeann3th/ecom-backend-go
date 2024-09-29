@@ -7,7 +7,7 @@ test:
 clean:
 	@echo "Cleaning Up..."
 	@rm -rf bin
-run: build
+run:
 	@echo "Running Application..."
 	@./bin/app
 
