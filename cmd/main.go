@@ -12,16 +12,10 @@ import (
 	"github.com/zeann3th/ecom/internal/api/services/product"
 	"github.com/zeann3th/ecom/internal/api/services/user"
 	"github.com/zeann3th/ecom/internal/api/upload"
-	"github.com/zeann3th/ecom/internal/config"
 	"github.com/zeann3th/ecom/internal/db"
 )
 
 func main() {
-	err := config.LoadEnv()
-	if err != nil {
-		log.Printf("Cannot detect .env file, switching to os env variables")
-	}
-
 	e := echo.New()
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
