@@ -70,7 +70,7 @@ func main() {
 	// Cloudinary
 	up := &upload.UploadHandler{}
 
-	v1.GET("/upload", up.GenerateSignature)
+	v1.GET("/upload", up.GenerateSignature, m.JWTMiddleware)
 
 	// Render port
 	port := os.Getenv("PORT")
